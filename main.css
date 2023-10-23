@@ -20,7 +20,7 @@ body {
 }
 
 a {
-    font-size: 4em;
+    font-size: min(10vw, 4em);
 }
 
 .red {
