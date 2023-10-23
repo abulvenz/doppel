@@ -1,0 +1,49 @@
+body {
+    margin: 0;
+}
+
+.page-container {
+    margin: 0 auto;
+    max-width: 900px;
+}
+
+.player-text {
+    background-color: rgba(255, 228, 196, 0.507);
+    padding: 5px;
+    border-radius: 5px;
+}
+
+.container {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: baseline;
+}
+
+a {
+    font-size: 4em;
+}
+
+.red {
+    background-color: red;
+}
+
+.blue {
+    background-color: blue;
+}
+
+.green {
+    background-color: green;
+}
+
+.yellow {
+    background-color: yellow;
+}
+
+.player {
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.item :hover {
+    background-color: gray;
+}
