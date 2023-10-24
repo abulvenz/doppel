@@ -204,13 +204,13 @@ m.mount(document.getElementById("app"), {
         table(
           players.map(player => tr(
             td(button({ onclick: e => players.splice(players.indexOf(player), 1) }, '×')),
-            td[player.cls](input({ onchange: e => player.name = e.target.value, type: 'text', value: player.name })),
-            td(input({ onchange: e => player.keys = e.target.value, type: 'text', value: player.keys })),
+            td[player.cls](input({ onchange: e => player.name = e.target.value, type: 'text', value: player.name }),
+              input({ onchange: e => player.keys = e.target.value, type: 'text', value: player.keys })),
             td(clss.map(cls => button[cls]({ onclick: e => player.cls = cls }, '#'))
             )))
         ),
         h2("Karten ", alphabet.filter((a, i) => i < 5).join(" ")),
-        table(tr(alphas.map((alpha, idx) => button({ onclick: e => alphabet = [...alphas[idx].symbols, ...'GEWONNEN'.split('')] }, alpha.symbols)))),
+        table(tr(alphas.map((alpha, idx) => button({ onclick: e => alphabet = [...alphas[idx].symbols, ...'GEWONNEN'.split('')] }, alpha.symbols.filter((a, i) => i < 5))))),
         h2("Anfangen!"),
         button({
           onclick: e => {
