@@ -30,8 +30,6 @@ const last = arr => arr[arr.length - 1];
 
 const offset = 0;
 
-let selectedAlphabet = undefined;
-
 let alphabet = [
   ...(alphas[1].symbols),
   ...  'GEWONNEN'.split(''),
@@ -95,10 +93,10 @@ const distribute = (players, cards) => {
   return mCards;
 };
 
-const when = (value, f, or) => value ? f(value) : or;
 
 let displaySmallStuff = true;
 
+const when = (value, f, or) => value ? f(value) : or;
 const players = when(
   localStorage.getItem(STORAGE_PLAYERS_KEY),
   storage => JSON.parse(storage),
@@ -131,15 +129,14 @@ const players = when(
 
 let deck = [];
 
-const handleClick = (key) => {
+const handleClick = (player, keyNum) => {
   if (deck.length === 0) {
     console.log("Haven't started yet")
     return false;
   }
-  const player = players.find(p => p.keys.indexOf(key) >= 0);
   if (player) {
     if (player.cards.length === 0) { console.log('Already won'); return true; }
-    const selectedSymbol = last(player.cards)[player.keys.indexOf(key)];
+    const selectedSymbol = last(player.cards)[keyNum];
 
     if (last(deck).indexOf(selectedSymbol) >= 0) {
       deck.push(player.cards.splice(player.cards.length - 1, 1)[0])
@@ -158,17 +155,20 @@ const handleClick = (key) => {
 };
 
 window.addEventListener("keypress", key => {
-  if (handleClick(key.key))
-    m.redraw();
+
+  const player = players.find(p => p.keys.indexOf(key.key) >= 0);
+  if (player)
+    if (handleClick(player, key.key, player.keys.indexOf(key.key)))
+      m.redraw();
 })
 
 const cardC = (vnode) => ({
-  view: ({ attrs: { card, keys = "        " } }) => {
-    const k = keys.split('');
+  view: ({ attrs: { card, player } }) => {
+    const k = (player?.keys)?.split('');
     return div.container(
       card.map((item, idx) => [
-        a.item({ onclick: e => handleClick(k[idx]) }, alphabet[item + offset]),
-        displaySmallStuff ? small(k[idx]) : null,
+        a.item({ onclick: e => handleClick(player, idx) }, alphabet[item + offset]),
+        displaySmallStuff && k ? small(k[idx]) : null,
       ])
     );
   }
@@ -194,7 +194,7 @@ m.mount(document.getElementById("app"), {
           players.map(player =>
             div.player[player.cls](
               displaySmallStuff ? div.playerText(player.name, ': ', plural(player.cards.length, "Karte", "Karten") + ', ', player.malus, ' Malus') : null,
-              m(cardC, { card: last(player.cards) || winCard, keys: player.keys }),
+              m(cardC, { card: last(player.cards) || winCard, player }),
             )
           )
         )
