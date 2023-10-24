@@ -4,8 +4,10 @@ import alphas from "./alphas";
 
 const { keys } = Object;
 const { sqrt, trunc, random, max, min } = Math;
-const { h1, h2, input, button, div, table, tr, td, a, small } = tagl(m);
+const { h1, h2, input, button, div, table, tr, td, a, small, th } = tagl(m);
 
+
+const STORAGE_PLAYERS_KEY = "players";
 const use = (v, f) => f(v);
 
 const range = (N) => {
@@ -75,13 +77,14 @@ const createCards = (N) => {
   return cards;
 };
 
-
 const cards = shuffle(createCards(8));
 
 const distribute = (players, cards) => {
   let mCards = shuffle(cards.slice(0, cards.length))
-  players.forEach(p => p.cards = []);
-
+  players.forEach(p => {
+    p.cards = [];
+    p.malus = 0;
+  });
   while (mCards.length > players.length) {
     players.forEach(player => {
       const next = randomElement(mCards)
@@ -92,39 +95,47 @@ const distribute = (players, cards) => {
   return mCards;
 };
 
+const when = (value, f, or) => value ? f(value) : or;
 
-const players = [
-  {
-    name: 'Spieler 1',
-    keys: '12345678',
-    malus: 0,
-    cls: 'red'
-  },
-  {
-    name: 'Spieler 2',
-    keys: 'qwertzui',
-    malus: 0,
-    cls: 'green'
-  },
-  {
-    name: 'Spieler 3',
-    keys: 'asdfghjk',
-    malus: 0,
-    cls: 'blue'
-  },
-  {
-    name: 'Spieler 4',
-    keys: 'yxcvbnm,',
-    malus: 0,
-    cls: 'yellow'
-  }
-];
+let displaySmallStuff = true;
+
+const players = when(
+  localStorage.getItem(STORAGE_PLAYERS_KEY),
+  storage => JSON.parse(storage),
+  [
+    {
+      name: 'Spieler 1',
+      keys: '12345678',
+      malus: 0,
+      cls: 'red'
+    },
+    {
+      name: 'Spieler 2',
+      keys: 'qwertzui',
+      malus: 0,
+      cls: 'green'
+    },
+    {
+      name: 'Spieler 3',
+      keys: 'asdfghjk',
+      malus: 0,
+      cls: 'blue'
+    },
+    {
+      name: 'Spieler 4',
+      keys: 'yxcvbnm,',
+      malus: 0,
+      cls: 'yellow'
+    }
+  ]);
 
 let deck = [];
 
 const handleClick = (key) => {
-  if (deck.length === 0)
-    return;
+  if (deck.length === 0) {
+    console.log("Haven't started yet")
+    return false;
+  }
   const player = players.find(p => p.keys.indexOf(key) >= 0);
   if (player) {
     if (player.cards.length === 0) { console.log('Already won'); return; }
@@ -140,14 +151,16 @@ const handleClick = (key) => {
       player.cards = [...deck.splice(0, 1), ...player.cards]
       player.malus = player.malus - 1;
     }
+
   } else {
     console.log("No player", key);
   }
+  return true;
 };
 
 window.addEventListener("keypress", key => {
-  handleClick(key.key);
-  m.redraw();
+  if (handleClick(key.key))
+    m.redraw();
 })
 
 const cardC = (vnode) => ({
@@ -156,18 +169,23 @@ const cardC = (vnode) => ({
     return div.container(
       card.map((item, idx) => [
         a.item({ onclick: e => handleClick(k[idx]) }, alphabet[item + offset]),
-        small(k[idx]),
+        displaySmallStuff ? small(k[idx]) : null,
       ])
     );
   }
 });
+
+const clss = [
+  'red', 'blue', 'green',
+  'yellow', 'yellowgreen', 'salmon'
+]
 
 const plural = (n, s, p, z = p) => n
   + ' ' + (n === 0 ? z : (n === 1 ? s : p));
 
 m.mount(document.getElementById("app"), {
   view: (vnode) => div.pageContainer([
-    h1("DOPPELGÄNGER"),
+    h1({ onclick: e => displaySmallStuff = !displaySmallStuff }, "DOPPELGÄNGER"),
     deck.length > 0 ?
       [
         div("Stapel: ", plural(deck.length, "Karte", "Karten"),
@@ -180,18 +198,24 @@ m.mount(document.getElementById("app"), {
         )
       ] :
       [
-        h2("Spieler"),
+        h2("Spieler ", button({ onclick: e => players.push({ name: 'Spieler ' + (players.length + 1) }) }, '+')),
         table(
           players.map(player => tr(
             td(button({ onclick: e => players.splice(players.indexOf(player), 1) }, '×')),
-            td(input({ onchange: e => player.name = e.target.value, type: 'text', value: player.name })),
-            td(input({ onchange: e => player.keys = e.target.value, type: 'text', value: player.keys }))
-          ))
+            td[player.cls](input({ onchange: e => player.name = e.target.value, type: 'text', value: player.name })),
+            td(input({ onchange: e => player.keys = e.target.value, type: 'text', value: player.keys })),
+            td(clss.map(cls => button[cls]({ onclick: e => player.cls = cls }, '#'))
+            )))
         ),
         h2("Karten ", alphabet.filter((a, i) => i < 5).join(" ")),
         table(tr(alphas.map((alpha, idx) => button({ onclick: e => alphabet = [...alphas[idx].symbols, ...'GEWONNEN'.split('')] }, alpha.symbols)))),
         h2("Anfangen!"),
-        button({ onclick: e => deck = distribute(players, cards) }, "Spiel starten")
+        button({
+          onclick: e => {
+            localStorage.setItem(STORAGE_PLAYERS_KEY, JSON.stringify(players));
+            deck = distribute(players, cards);
+          }
+        }, "Spiel starten")
       ]
   ])
 });

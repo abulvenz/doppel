@@ -1,5 +1,6 @@
 body {
     margin: 0;
+    overflow: hidden;
 }
 
 .page-container {
@@ -20,23 +21,31 @@ body {
 }
 
 a {
-    font-size: min(10vw, 4em);
+    font-size: min(8vw, 4em);
 }
 
 .red {
-    background-color: red;
+    background-color: rgba(255, 0, 0, 0.418);
 }
 
 .blue {
-    background-color: blue;
+    background-color: rgba(0, 0, 255, 0.397);
 }
 
 .green {
-    background-color: green;
+    background-color: rgba(0, 128, 0, 0.397);
 }
 
 .yellow {
-    background-color: yellow;
+    background-color: rgba(255, 255, 0, 0.39);
+}
+
+.yellowgreen {
+    background-color: rgba(153, 205, 50, 0.329);
+}
+
+.salmon {
+    background-color: rgba(250, 128, 114, 0.342);
 }
 
 .player {
