@@ -138,7 +138,7 @@ const handleClick = (key) => {
   }
   const player = players.find(p => p.keys.indexOf(key) >= 0);
   if (player) {
-    if (player.cards.length === 0) { console.log('Already won'); return; }
+    if (player.cards.length === 0) { console.log('Already won'); return true; }
     const selectedSymbol = last(player.cards)[player.keys.indexOf(key)];
 
     if (last(deck).indexOf(selectedSymbol) >= 0) {
@@ -151,7 +151,6 @@ const handleClick = (key) => {
       player.cards = [...deck.splice(0, 1), ...player.cards]
       player.malus = player.malus - 1;
     }
-
   } else {
     console.log("No player", key);
   }
@@ -178,7 +177,7 @@ const cardC = (vnode) => ({
 const clss = [
   'red', 'blue', 'green',
   'yellow', 'yellowgreen', 'salmon'
-]
+];
 
 const plural = (n, s, p, z = p) => n
   + ' ' + (n === 0 ? z : (n === 1 ? s : p));
@@ -188,12 +187,15 @@ m.mount(document.getElementById("app"), {
     h1({ onclick: e => displaySmallStuff = !displaySmallStuff }, "DOPPELGÄNGER"),
     deck.length > 0 ?
       [
-        div("Stapel: ", plural(deck.length, "Karte", "Karten"),
+        div(displaySmallStuff ? ["Stapel: ", plural(deck.length, "Karte", "Karten")] : null,
           m(cardC, { card: last(deck) }),
         ),
         div(
           players.map(player =>
-            div.player[player.cls](div.playerText(player.name, ': ', plural(player.cards.length, "Karte", "Karten") + ', ', player.malus, ' Malus'), m(cardC, { card: last(player.cards) || winCard, keys: player.keys }),)
+            div.player[player.cls](
+              displaySmallStuff ? div.playerText(player.name, ': ', plural(player.cards.length, "Karte", "Karten") + ', ', player.malus, ' Malus') : null,
+              m(cardC, { card: last(player.cards) || winCard, keys: player.keys }),
+            )
           )
         )
       ] :
